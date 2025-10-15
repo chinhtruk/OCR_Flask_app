@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Text Extractor</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --background-color: #f0f2f5;
+      --text-color: #2c3e50;
+      --card-bg: #ffffff;
+      --gradient-1: linear-gradient(135deg, #2c3e50, #3498db);
+      --gradient-2: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    body, html {
+      height: 100%;
+      margin: 0;
+      background-color: var(--background-color);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .navbar {
+      background: var(--gradient-1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 1.2rem 0;
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 2rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: linear-gradient(45deg, #fff, #e0e0e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .main-container {
+      min-height: calc(100vh - 180px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 0;
+    }
+
+    .upload-card {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      border: none;
+      border-radius: 25px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--card-bg);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .btn-primary {
+      background: var(--gradient-2);
+      border: none;
+      padding: 15px 35px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: 0.5s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+    }
+
+    .upload-title {
+      color: #2D3748;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .upload-title::after {
+      content: '';
+      display: block;
+      width: 100px;
+      height: 4px;
+      background: #4299E1;
+      margin: 1rem auto 0;
+      border-radius: 2px;
+    }
+
+    .upload-area {
+      border: 2px dashed #4299E1;
+      border-radius: 15px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #F7FAFC;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .upload-area:hover {
+      border-color: #2B6CB0;
+      background: #EBF8FF;
+    }
+
+    .choose-file-btn {
+      background: #4299E1;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 1.125rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .choose-file-btn:hover {
+      background: #2B6CB0;
+      transform: translateY(-2px);
+    }
+
+    .upload-text {
+      color: #718096;
+      font-size: 1.125rem;
+      margin: 0;
+    }
+
+    .extract-btn {
+      background: #4299E1;
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 1.25rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .extract-btn:hover {
+      background: #2B6CB0;
+      transform: translateY(-2px);
+    }
+
+    .extract-btn i {
+      font-size: 1.25rem;
+    }
+
+    #image_upload {
+      display: none;
+    }
+
+    .extracted-text {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      margin-top: 25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      border-left: 8px solid var(--secondary-color);
+      position: relative;
+      overflow: hidden;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .extracted-text::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent, rgba(52, 152, 219, 0.05), transparent);
+      transform: translateX(-100%);
+      transition: 0.6s;
+    }
+
+    .extracted-text:hover::before {
+      transform: translateX(100%);
+    }
+
+    .extracted-text p {
+      margin-bottom: 15px;
+      line-height: 1.8;
+      color: var(--text-color);
+      font-size: 1.1rem;
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .extracted-text p::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--secondary-color);
+      font-weight: bold;
+    }
+
+    .preview-container {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      max-height: 400px;
+    }
+
+    .preview-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 20px;
+      transition: all 0.4s ease;
+    }
+
+    .preview-image:hover {
+      transform: scale(1.03);
+    }
+
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(3px);
+    }
+
+    .preview-container:hover .image-overlay {
+      opacity: 1;
+    }
+
+    .footer {
+      background: var(--gradient-1);
+      color: white;
+      padding: 40px 0;
+      margin-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+      background-repeat: no-repeat;
+      background-position: bottom;
+      background-size: cover;
+      opacity: 0.1;
+    }
+
+    .footer .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer p {
+      margin-top: 15px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .logo {
+      max-width: 180px;
+      height: auto;
+      margin-bottom: 25px;
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 40px 0;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--secondary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .custom-file-upload {
+      display: inline-block;
+      padding: 18px 35px;
+      cursor: pointer;
+      background: white;
+      border: 2px solid var(--secondary-color);
+      border-radius: 50px;
+      font-weight: 600;
+      color: var(--secondary-color);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .custom-file-upload::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    .custom-file-upload:hover::before {
+      left: 100%;
+    }
+
+    .custom-file-upload:hover {
+      background: var(--secondary-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+    }
+
+    .preview-text {
+      color: white;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .section-title {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 25px;
+      position: relative;
+      padding-bottom: 15px;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--gradient-2);
+      border-radius: 2px;
+    }
+
+    .navbar-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+      .navbar-brand {
+        font-size: 1.5rem;
+      }
+      
+      .section-title {
+        font-size: 1.5rem;
+      }
+      
+      .custom-file-upload {
+        padding: 15px 25px;
+      }
+      
+      .upload-area {
+        padding: 30px 15px;
+      }
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .result-card-header {
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2D3748;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title i {
+      color: #4A5568;
+    }
+
+    .result-card-divider {
+      width: 80px;
+      height: 4px;
+      background: #4299E1;
+      margin-left: 32px;
+      border-radius: 2px;
+    }
+
+    .result-content {
+      padding: 32px;
+    }
+
+    .import-new-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 32px;
+      border: 2px solid #4299E1;
+      border-radius: 9999px;
+      color: #4299E1;
+      font-weight: 600;
+      background: white;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
+    }
+
+    .import-new-btn:hover {
+      background: #4299E1;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(66, 153, 225, 0.2);
+    }
+
+    .import-new-btn i {
+      font-size: 1.1rem;
+    }
+
+    .result-image {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .extracted-text-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .text-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .bullet {
+      color: #4299E1;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .text {
+      color: #4A5568;
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      .result-card-header {
+        padding: 20px;
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+
+      .result-card-divider {
+        margin: 0 auto;
+      }
+
+      .result-content {
+        padding: 20px;
+      }
+
+      .header-title {
+        font-size: 20px;
+      }
+
+      .import-new-btn {
+        padding: 10px 24px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* History Modal Styles */
+    .modal-backdrop {
+      background-color: rgba(255, 255, 255, 0.3) !important;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-backdrop.show {
+      opacity: 1 !important;
+    }
+
+    .modal {
+      background-color: transparent !important;
+    }
+
+    .modal-dialog {
+      max-width: 900px;
+    }
+
+    .modal-content {
+      border: none;
+      border-radius: 25px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-header {
+      padding: 1.8rem 2.5rem;
+      border-bottom: 2px solid rgba(233, 236, 239, 0.3);
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2D3748;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      letter-spacing: -0.5px;
+    }
+
+    .modal-title i {
+      color: #4299E1;
+      font-size: 1.6rem;
+    }
+
+    .modal-body {
+      padding: 2.5rem;
+      max-height: 75vh;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .history-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    .history-item {
+      display: flex;
+      gap: 2rem;
+      padding: 1.8rem;
+      background: rgba(247, 250, 252, 0.8);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 20px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .history-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .history-item:hover {
+      transform: translateY(-5px);
+      border-color: #4299E1;
+      box-shadow: 0 8px 25px rgba(66, 153, 225, 0.15);
+    }
+
+    .history-item:hover::before {
+      opacity: 1;
+    }
+
+    .history-image {
+      flex: 0 0 180px;
+      height: 180px;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 3px solid #E2E8F0;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .history-image:hover {
+      border-color: #4299E1;
+      transform: scale(1.02);
+    }
+
+    .history-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .history-image:hover img {
+      transform: scale(1.1);
+    }
+
+    .history-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 180px;
+    }
+
+    .history-text {
+      color: #2D3748;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .history-text::before {
+      content: '"';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #4299E1;
+      font-size: 2rem;
+      font-family: serif;
+      line-height: 1;
+    }
+
+    .history-meta {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .history-date {
+      color: #718096;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
+
+    .history-date i {
+      color: #4299E1;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      color: #718096;
+      font-size: 1.5rem;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close:hover {
+      opacity: 1;
+      transform: rotate(90deg);
+      color: #4299E1;
+    }
+
+    .modal-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+      background: rgba(247, 250, 252, 0.8);
+      border-radius: 4px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+      background: rgba(66, 153, 225, 0.3);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(66, 153, 225, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .modal-dialog {
+        margin: 1rem;
+      }
+
+      .modal-title {
+        font-size: 1.5rem;
+      }
+
+      .modal-header {
+        padding: 1.5rem;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .history-item {
+        flex-direction: column;
+        padding: 1.5rem;
+        gap: 1.5rem;
+      }
+
+      .history-image {
+        width: 100%;
+        height: 200px;
+        flex: none;
+      }
+
+      .history-content {
+        min-height: auto;
+      }
+
+      .history-text {
+        font-size: 1rem;
+        -webkit-line-clamp: 3;
+      }
+
+      .history-meta {
+        padding-top: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="fas fa-image me-2"></i>Image to Text
+      </a>
+      <div class="navbar-text text-light">
+      </div>
+      <div class="ms-auto">
+        <button class="btn btn-outline-light" id="historyBtn">
+          <i class="fas fa-history me-2"></i>History
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- History Modal -->
+  <div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <h5 class="modal-title">
+            <i class="fas fa-history me-2"></i>
+            Conversation History
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="history-container">
+            {% if history %}
+              {% for item in history %}
+              <div class="history-item">
+                <div class="history-image">
+                  <img src="{{ item.image_url }}" alt="Converted image">
+                </div>
+                <div class="history-content">
+                  <div class="history-text">{{ item.text }}</div>
+                  <div class="history-meta">
+                    <span class="history-date">
+                      <i class="far fa-clock me-1"></i>
+                      {{ item.date }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center text-muted py-5">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <p>No conversation history</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-circle me-2"></i>
+      {{ error }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
+    <!-- Initial Upload Section -->
+    <div id="initialUploadSection" class="main-container">
+      <div class="upload-card">
+        <div class="card p-4">
+          <h1 class="upload-title">UPLOAD YOUR IMAGE</h1>
+          <form action="/" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-area mb-4">
+              <input type="file" id="image_upload" name="image_upload" accept="image/*" />
+              <button type="button" class="choose-file-btn" onclick="document.getElementById('image_upload').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                Choose File
+              </button>
+              <div class="file-info">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                  <span class="text-muted">No file chosen</span>
+                </div>
+              </div>
+              <p class="upload-text">or drag and drop your image here</p>
+            </div>
+
+            <!-- Preview Container -->
+            <div id="previewContainer" class="preview-container" style="display: none;">
+              <img id="imagePreview" class="preview-image" alt="Preview">
+            </div>
+
+            <button type="submit" class="extract-btn">
+              <i class="fas fa-magic"></i>
+              EXTRACT TEXT
+            </button>
+          </form>
+
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            <p class="mt-3">Processing your image...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="row justify-content-center" id="resultsSection" style="display: none;">
+      <!-- Left Card - Uploaded Image -->
+      <div class="col-md-6 d-flex flex-column">
+        <div class="result-card">
+          <div class="result-card-header">
+            <div class="header-title">
+              <i class="fas fa-image"></i>
+              UPLOADED IMAGE
+            </div>
+          </div>
+          <div class="result-card-divider"></div>
+          <div id="resultPreviewContainer" class="result-content">
+            <img id="resultImagePreview" class="result-image" alt="Preview">
+          </div>
+        </div>
+        <div class="text-center mt-4 mb-4">
+          <button class="import-new-btn" id="importNewBtn">
+            <i class="fas fa-plus"></i>
+            Import New Image
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Card - Extracted Text -->
+      <div class="col-md-6">
+        <div class="result-card">
+          <div class="result-card-header">
+            <div class="header-title">
+              <i class="fas fa-file-alt"></i>
+              EXTRACTED TEXT:
+            </div>
+          </div>
+          <div class="result-card-divider"></div>
+          <div class="result-content">
+            <div class="extracted-text-container">
+              {% for i in text %}
+              <div class="text-item">
+                <span class="bullet">•</span>
+                <span class="text">{{ i }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+      <p class="mb-0">&copy; 2025 Số hóa và quản trị thông tin số</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function initializeAllEventListeners() {
+      // File input change handler
+      const fileInput = document.getElementById('image_upload');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+      const initialUploadSection = document.getElementById('initialUploadSection');
+      const resultsSection = document.getElementById('resultsSection');
+      const resultImagePreview = document.getElementById('resultImagePreview');
+      const uploadArea = document.querySelector('.upload-area');
+      const historyBtn = document.getElementById('historyBtn');
+      const importNewBtn = document.getElementById('importNewBtn');
+      
+      if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          const fileInfo = document.querySelector('.file-info');
+          if (file) {
+            fileInfo.innerHTML = `
+              <div class="d-flex align-items-center justify-content-center gap-2">
+                <button type="button" class="btn btn-light" disabled>Choose File</button>
+                <span class="text-muted">${file.name}</span>
+              </div>
+            `;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              imagePreview.src = e.target.result;
+              previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+
+      // Form submission handler
+      const uploadForm = document.getElementById('uploadForm');
+      if (uploadForm) {
+        uploadForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const loadingIndicator = document.querySelector('.loading');
+          if (loadingIndicator) loadingIndicator.style.display = 'block';
+          
+          // Store the current preview image
+          const currentPreviewImage = document.getElementById('imagePreview').src;
+          
+          const formData = new FormData(this);
+          
+          fetch('/', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.text())
+          .then(html => {
+            // Create a temporary container
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Update only the necessary parts
+            const newResultsSection = tempDiv.querySelector('#resultsSection');
+            const currentResultsSection = document.getElementById('resultsSection');
+            if (newResultsSection && currentResultsSection) {
+              currentResultsSection.innerHTML = newResultsSection.innerHTML;
+              
+              // Set the result image preview
+              const resultImagePreview = document.getElementById('resultImagePreview');
+              if (resultImagePreview) {
+                resultImagePreview.src = currentPreviewImage;
+              }
+            }
+            
+            // Hide upload and show results
+            if (initialUploadSection) {
+              initialUploadSection.style.display = 'none';
+            }
+            if (resultsSection) {
+              resultsSection.style.display = 'flex';
+              resultsSection.classList.add('mt-5');
+            }
+            
+            // Reinitialize event listeners
+            initializeAllEventListeners();
+            
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            alert('Đã có lỗi xảy ra khi xử lý ảnh');
+          });
+        });
+      }
+
+      // Import new button handler
+      if (importNewBtn) {
+        importNewBtn.addEventListener('click', function() {
+          // Reset form and views
+          if (fileInput) fileInput.value = '';
+          const fileInfo = document.querySelector('.file-info');
+          if (fileInfo) {
+            fileInfo.innerHTML = `
+              <div class="d-flex align-items-center justify-content-center gap-2">
+                <span class="text-muted">No file chosen</span>
+              </div>
+            `;
+          }
+          if (previewContainer) {
+            previewContainer.style.display = 'none';
+            const imagePreview = document.getElementById('imagePreview');
+            if (imagePreview) imagePreview.src = '';
+          }
+          
+          // Hide results and show upload
+          if (resultsSection) {
+            resultsSection.style.display = 'none';
+          }
+          if (initialUploadSection) {
+            initialUploadSection.style.display = 'flex';
+            initialUploadSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      }
+
+      // Drag and drop handlers
+      if (uploadArea) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+      }
+
+      // History modal handler
+      if (historyBtn) {
+        const historyModal = document.getElementById('historyModal');
+        const bsHistoryModal = new bootstrap.Modal(historyModal);
+        
+        historyBtn.addEventListener('click', function() {
+          bsHistoryModal.show();
+          refreshHistory();
+        });
+
+        // Handle modal close events
+        historyModal.addEventListener('hidden.bs.modal', function () {
+          // Remove modal backdrop if it exists
+          const backdrop = document.querySelector('.modal-backdrop');
+          if (backdrop) {
+            backdrop.remove();
+          }
+          // Remove modal-open class from body
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+
+        // Handle close button click
+        const closeBtn = historyModal.querySelector('.btn-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            bsHistoryModal.hide();
+          });
+        }
+      }
+    }
+
+    // Helper functions
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function highlight(e) {
+      const uploadArea = e.currentTarget;
+      uploadArea.classList.add('border-primary');
+      uploadArea.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+      uploadArea.style.transform = 'scale(1.02)';
+    }
+
+    function unhighlight(e) {
+      const uploadArea = e.currentTarget;
+      uploadArea.classList.remove('border-primary');
+      uploadArea.style.backgroundColor = '#F7FAFC';
+      uploadArea.style.transform = 'scale(1)';
+    }
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      const fileInput = document.getElementById('image_upload');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+      
+      fileInput.files = files;
+      
+      if (files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          imagePreview.src = e.target.result;
+          previewContainer.style.display = 'block';
+        }
+        reader.readAsDataURL(files[0]);
+      }
+    }
+
+    async function refreshHistory() {
+      const historyContainer = document.querySelector('.history-container');
+      try {
+        const response = await fetch('/history');
+        const history = await response.json();
+        
+        if (history.length > 0) {
+          historyContainer.innerHTML = history.map(item => `
+            <div class="history-item">
+              <div class="history-image">
+                <img src="${item.image_url}" alt="Converted image">
+              </div>
+              <div class="history-content">
+                <div class="history-text">${item.text}</div>
+                <div class="history-meta">
+                  <span class="history-date">
+                    <i class="far fa-clock me-1"></i>
+                    ${item.date}
+                  </span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          historyContainer.innerHTML = `
+            <div class="text-center text-muted py-5">
+              <i class="fas fa-inbox fa-3x mb-3"></i>
+              <p>No conversation history</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error fetching history:', error);
+        historyContainer.innerHTML = `
+          <div class="text-center text-muted py-5">
+            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+            <p>An error occurred while loading history</p>
+          </div>
+        `;
+      }
+    }
+
+    // Initialize all event listeners when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeAllEventListeners();
+    });
+  </script>
+</body>
+</html>
